@@ -1,10 +1,10 @@
 # orientdbbundle
 
-This is a wrapper of the excellent [OrientDB](http://orientdb.com/orientdb/)
+This is a wrapper of the marvelous [OrientDB](http://orientdb.com/orientdb/)
 database coming as an OSGi bundle.
 (Inspired by http://orientdb.com/docs/last/Embedded-Server.html)
 
-Well, yes, OrientDB jars already come as OSGi bundles, partly, but not all of
+Well, yes, OrientDB JARs already come as OSGi bundles, partly, but not all of
 them, do they? This package collects all parts and takes care for comprehensive
 configuration with the standard OrientDB config file.
 
@@ -36,9 +36,8 @@ Setup
 =====
 Data Store Location
 -------------------
-The present implementation expects an "OrientDB Home" directory called
-`orient_db` directly under the current working directory of the application
-server.
+The present implementation expects an "OrientDB Home" directory `orient_db`
+directly under the current working directory of the application server.
 Create this folder there and copy/create the following ressources:
 
 ```
@@ -64,14 +63,14 @@ The example config file "orientdb-server-config.xml" sets the path for the
 Change this entry to meet your needs.
 
 The OrientDB Studio itself is not a part of this project.
-* Download OrientDB Studio from https://github.com/orientechnologies/orientdb/blob/master/server/plugins/studio-2.1.zip
+* Download OrientDB Studio from https://github.com/orientechnologies/orientdb/blob/master/server/plugins/studio-2.1.zip?raw=true
 * Unpack the ZIP and copy the contents to the above configured folder.
 
 (Note: the "www" folder is inside the ZIP).
 
 ___NOTICE___:
 OrientDB Studio has a bug that occurs when beeing run from an embedded server.
-Apply the following patch to orientdb_studio/www/scripts/scripts.js in order to
+Apply the following patch to `orientdb_studio/www/scripts/scripts.js` in order to
 workaround it:
 ```
   var API = (function () {
@@ -124,4 +123,4 @@ Versions
 ========
 * This module is based on [OrientDB](http://orientdb.com/orientdb/) 2.1.14.
 * It has been tested with [Apache ServiceMix](http://servicemix.apache.org/) 6.0.0
-which is based on [Apache Karaf]((http://karaf.apache.org/)) 3.0.4.
+which is based on [Apache Karaf](http://karaf.apache.org/) 3.0.4.
