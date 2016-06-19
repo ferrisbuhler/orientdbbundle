@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" monitorInterval="30">
+
+  <Appenders>
+  
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{ISO8601} [%thread] %-5level %logger - %msg%n" />
+    </Console>
+
+    <RollingFile name="LOG_FILE" fileName="log/orientDbBundle.log"
+                 filePattern="log/orientDbBundle.%d{yyyy-MM-dd}.%i.log">
+      <PatternLayout pattern="%d{ISO8601} [%thread] %-5level %logger - %msg%n" />
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+      </Policies>      
+    </RollingFile >
+
+  </Appenders>
+
+  <Loggers>
+
+    <Root level="debug">
+      <AppenderRef ref="STDOUT" />
+      <AppenderRef ref="LOG_FILE" />
+    </Root>
+
+  </Loggers>
+  
+</Configuration>
