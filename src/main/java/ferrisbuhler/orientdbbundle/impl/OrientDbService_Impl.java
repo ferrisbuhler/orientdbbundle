@@ -6,14 +6,18 @@ import com.orientechnologies.orient.server.OServerMain;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import ferrisbuhler.orientdbbundle.OrientDbService;
 import ferrisbuhler.orientdbbundle.OrientdbBundleException;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
+import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.cm.ConfigurationEvent;
+import org.osgi.service.cm.ConfigurationListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,17 +30,17 @@ import org.slf4j.LoggerFactory;
         immediate=true
 )
 @Service
-public class OrientDbService_Impl implements OrientDbService {
+public class OrientDbService_Impl implements OrientDbService, ConfigurationListener {
   private static final Logger logger = LoggerFactory.getLogger(OrientDbService_Impl.class);
-  private static final String CONFIG_PID = "my.dataStore.OrientDB";
+  private static final String CONFIG_PID = "ferrisbuhler.orientdbbundle";
   private static final String DBURL_PARAM = "databaseUrl";  
 
-  private static final String ORIENTDB_HOME = "orient_db";
-  private static final String ORIENTDB_CONFIG_FILE = "orientdb-server-config.xml";
-  private static final String ORIENTDB_DATASTORE = "my_datastore";
-
-  private static final String ORIENTDB_USER     = "admin";
-  private static final String ORIENTDB_PASSWORD = "admin";
+  // default settings - may be overridden by configuration
+  private static final String ORIENTDB_HOME_DEFAULT = "orient_db";
+  private static final String ORIENTDB_CONFIG_FILE_PATH_DEFAULT = "etc/orientdb-server-config.xml";
+  private static final String ORIENTDB_DATASTORE_DEFAULT = "my_datastore";
+  private static final String ORIENTDB_USER_DEFAULT     = "admin";
+  private static final String ORIENTDB_PASSWORD_DEFAULT = "admin";
 
   private String datastoreUrl = null;
   
@@ -55,36 +59,56 @@ public class OrientDbService_Impl implements OrientDbService {
    */
   @Activate
   public void activate() throws OrientdbBundleException {
-    
-    /* expecting the server's home directory %ORIENTDB_HOME% to reside in the
-    ** current working directory.
-    ** Commonly this is the base directory of OSGi application servers.
-    */
-    Path dbHomePath = Paths.get(ORIENTDB_HOME);
-    Path configFilePath = dbHomePath.resolve(ORIENTDB_CONFIG_FILE);
+    logger.info("activate: Starting OrientDb Service");
 
-    logger.info("activate: Starting OrientDb Service - config file = '{}'.", configFilePath);
-    System.setProperty("ORIENTDB_HOME", dbHomePath.toAbsolutePath().toString());
-    
+    /* loading config params from OSGi Config Admin
+    ** (may origin from a config file etc/ferrisbuhler.orientdbbundle.cfg or from
+    **  a feature bundle descriptor)
+    */
+    ConfigAdminHandler cfgAdminHdl = new ConfigAdminHandler(configAdmin, CONFIG_PID);
+    String orientdb_home  = cfgAdminHdl.getParam("orientdb_home", ORIENTDB_HOME_DEFAULT);
+    String cfgFile_path   = cfgAdminHdl.getParam("cfgFile_path", ORIENTDB_CONFIG_FILE_PATH_DEFAULT);
+    String datastore_name = cfgAdminHdl.getParam("datastore_name", ORIENTDB_DATASTORE_DEFAULT);
+    String datastore_user = cfgAdminHdl.getParam("datastore_name", ORIENTDB_USER_DEFAULT);
+    String datastore_password = cfgAdminHdl.getParam("datastore_name", ORIENTDB_PASSWORD_DEFAULT);
+
+    // setting the ORIENTDB_HOME environment variable
+    Path orientDbHomePath = Paths.get(orientdb_home);
+    System.setProperty("ORIENTDB_HOME", orientDbHomePath.toAbsolutePath().toString());
+    logger.info("activate: OrientDbhome path = '{}'.", orientDbHomePath.toAbsolutePath());
+        
     try {
+      Path configFilePath = Paths.get(cfgFile_path);
+      File orientDBCfgFile = configFilePath.toFile();
+
+      if(orientDBCfgFile == null) {
+        throw new OrientdbBundleException("activate - cannot create OrientDB config file: " + cfgFile_path);
+      } else {
+        if(orientDBCfgFile.exists() && orientDBCfgFile.isFile()) {
+          logger.info("activate: Starting OrientDb with config file = '{}'.", configFilePath.toAbsolutePath());
+        } else {
+          orientDBCfgFile.createNewFile();
+        }
+      }
+
       /* ---------------------------------------------------------------------
        * init Orient DB server
        */
       // create and init server instance
-      orientDbServer = OServerMain.create();
-      orientDbServer.startup(configFilePath.toFile());
+      orientDbServer = OServerMain.create();      
+      orientDbServer.startup(orientDBCfgFile);
       orientDbServer.activate();
 
       // data store location
-      Path datastorePath = Paths.get(orientDbServer.getDatabaseDirectory(), ORIENTDB_DATASTORE);    
+      Path datastorePath = Paths.get(orientDbServer.getDatabaseDirectory(), datastore_name);    
       logger.debug("activate: datastore path: '{}'.", datastorePath);
 
       // data store URL
       datastoreUrl = "plocal:" + datastorePath;
       logger.info("activate: init datastore '{}'.", datastoreUrl);
 
-       // init db factory
-      dbGraphFactory = new OrientGraphFactory(datastoreUrl, ORIENTDB_USER, ORIENTDB_PASSWORD).setupPool(3, 15);
+      // init db factory
+      dbGraphFactory = new OrientGraphFactory(datastoreUrl, datastore_user, datastore_password).setupPool(3, 15);
 
       // connect to data store as a test - create if not exists
       try (ODatabase dbo = dbGraphFactory.getDatabase(true, false)) {
@@ -93,7 +117,7 @@ public class OrientDbService_Impl implements OrientDbService {
         /* Writing the data store URL to a config file.
         ** This empowers other bundles to open the data store.
         */
-        new ConfigAdminHandler(configAdmin, CONFIG_PID).setParam(DBURL_PARAM, datastoreUrl);
+        cfgAdminHdl.setParam(DBURL_PARAM, datastoreUrl);
       }
       
     } catch(Exception ex) {
@@ -103,6 +127,16 @@ public class OrientDbService_Impl implements OrientDbService {
     }
   }
 
+  /**
+   * OSGi service modified method
+   * @throws ferrisbuhler.orientdbbundle.OrientdbBundleException
+   */
+  @Modified
+  public void modified() throws OrientdbBundleException {
+    deactivate();
+    activate();
+  }
+  
   /**
    * stops Orient DB server
    */
@@ -118,6 +152,19 @@ public class OrientDbService_Impl implements OrientDbService {
     datastoreUrl = null;
   }
   
+  @Override
+  public void configurationEvent(ConfigurationEvent event) {
+    
+    if(!CONFIG_PID.equals(event.getPid())) {
+      return;
+    }
+    try {
+      modified();
+    } catch(OrientdbBundleException ex) {
+      logger.warn("configurationEvent - reconfiguration terminated with error:", ex);
+    }
+  }  
+    
   @Override
   public OrientGraphFactory getGraphFactory() throws OrientdbBundleException {
     if(dbGraphFactory == null) {

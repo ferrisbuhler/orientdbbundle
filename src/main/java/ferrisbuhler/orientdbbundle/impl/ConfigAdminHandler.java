@@ -30,16 +30,16 @@ public class ConfigAdminHandler {
   public ConfigAdminHandler(ConfigurationAdmin configAdmin, String cfgName) throws OrientdbBundleException {
 
     if(configAdmin == null) {
-      throw new OrientdbBundleException("getConfig - 'Felix Config Admin' not initialized!");
+      throw new OrientdbBundleException("ConfigAdminHandler - 'Felix Config Admin' not initialized!");
     }
 
     try {
       config = configAdmin.getConfiguration(cfgName);
       if(config == null) {
-        throw new OrientdbBundleException("getConfig - Properties not present in '" + cfgName + "'!");
+        throw new OrientdbBundleException("ConfigAdminHandler - Properties not present in '" + cfgName + "'!");
       }
       
-      logger.info("getConfig - loading properties from '{}'.", config.getPid());
+      logger.info("ConfigAdminHandler - loading properties from '{}'.", config.getPid());
       
       dictionary = config.getProperties();
       
@@ -102,6 +102,27 @@ public class ConfigAdminHandler {
     }
 
     return param;
+  }
+  
+  /**
+   * Obtains the required parameter in the config dictionary. In case of failure
+   * or if the value can't be found the default value is returned.
+   *
+   * @param key the parameter name
+   * @param defaultValue a default value to return if the property is not available
+   * @return the parameter value
+   */
+  public String getParam(String key, String defaultValue) {
+    try {
+      String value = (String)getDictionary().get(key);
+      if (value != null) {
+        return value;
+      }
+    } catch(OrientdbBundleException ex) {
+      logger.warn("getParam({},{}) - error:", key, defaultValue, ex);
+    }
+    
+    return defaultValue;
   }
   
   /**

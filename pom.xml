@@ -4,10 +4,11 @@
   
   <groupId>ferrisbuhler</groupId>
   <artifactId>orientdb-bundle</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <name>OrientDB Server OSGi Bundle</name>
+  <url>https://github.com/ferrisbuhler/orientdbbundle</url>
   <description>
     This module builds an OSGi bundle providing a complete embedded OrientDB server
     that can be applied by other OSGi bundles but is also accessable from external
@@ -15,8 +16,10 @@
   </description>
   
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>    
+    <maven.compiler.target>1.8</maven.compiler.target>
     <orientdb-version>2.1.14</orientdb-version>
     <slf4j-version>1.7.12</slf4j-version>
     <osgi-core-version>5.0.0</osgi-core-version>
@@ -161,34 +164,6 @@
               *
             </Private-Package>
             <Import-Package>
-              !com.sun.jdi.*,
-              !com.fasterxml.jackson.*,
-              !com.lmax.disruptor.*,
-              !com.google.common.base,
-              !com.jcraft.*,
-              !com.sun.tools.*,
-              !com.tinkerpop.*,
-              !gnu.gcj.*,
-              !kaffe.*,
-              !org.apache.bsf.*,
-              !org.apache.commons.cli,
-              !org.apache.commons.jxpath.*,
-              !org.apache.commons.vfs.*,
-              !org.apache.env,
-              !org.apache.harmony.*,
-              !org.apache.log,
-              !org.apache.log4j,
-              !org.apache.oro.*,
-              !org.bouncycastle.bcpg,
-              !org.bouncycastle.openpgp,
-              !org.junit.*,
-              !junit.*,
-              !sun.awt,
-              !sun.java2d.*,
-              !sun.misc.*,
-              !sun.rmi.*,
-              !sun.tools.*,
-              !weblogic.*,
               *;resolution:=optional
             </Import-Package>
             <Export-Package>
