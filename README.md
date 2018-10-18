@@ -50,7 +50,7 @@ You can find a template/example folder on the top level of this project.
 By convention the OrientDB server looks for data stores in the folder
 `<ORIENTDB_HOME>/databases`.
 
-Please consult the OrientDB documentation for further assistence with the 
+Please consult the OrientDB documentation for further assistence with the
 `orientdb-server-config.xml` config file. (http://orientdb.com/docs/last/DB-Server.html)
 
 OrientDB Studio
@@ -63,7 +63,7 @@ The example config file "orientdb-server-config.xml" sets the path for the
 Change this entry to meet your needs.
 
 The OrientDB Studio itself is not a part of this project.
-* Download OrientDB Studio from https://github.com/orientechnologies/orientdb/blob/master/server/plugins/studio-2.1.zip?raw=true
+* Download OrientDB Studio from https://search.maven.org/search?q=g:com.orientechnologies%20AND%20a:orientdb-studio
 * Unpack the ZIP and copy the contents to the above configured folder.
 
 (Note: the "www" folder is inside the ZIP).
@@ -112,7 +112,7 @@ Rather a "lack of knowledge" than a bug:
 The POM needs to declare some `Embedded-Dependency` entries for some OrientDB modules.
 However there are some problems with the `orientdb-graphdb` module:
 
-Logon to OrientDB studio os not possible any more as soon as the service
+Logon to OrientDB studio is not possible any more as soon as the service
 dependency is activated. When the service dependency is commented out studio
 works fine except of GraphDB operations.
 
@@ -121,6 +121,5 @@ disturb me too much (using plain key/value). Maybe some fellow knows advice.
 
 Versions
 ========
-* This module is based on [OrientDB](http://orientdb.com/orientdb/) 2.1.14.
-* It has been tested with [Apache ServiceMix](http://servicemix.apache.org/) 6.0.0
-which is based on [Apache Karaf](http://karaf.apache.org/) 3.0.4.
+* This module is based on [OrientDB](http://orientdb.com/orientdb/) 2.2.37.
+* It hasn't been tested yet against an OSGI environment (use earlier version for a tested release).
